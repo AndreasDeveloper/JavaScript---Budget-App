@@ -15,6 +15,16 @@ var budgetController = (function() {
         this.value = value;
     };
 
+    // Function | - Calculates total summary
+    var calculateTotal = function(type) {
+        var sum = 0;    // sum = Summary
+
+        data.allItems[type].forEach(function(cur) {
+            sum += cur.value;   // Same as: sum = sum + cur.value
+        });
+        data.totals[type] = sum;
+    };
+
 
     // Data Structure | - Holding Item Expenses and Incomes
     var data = {
@@ -27,7 +37,9 @@ var budgetController = (function() {
         totals: {
             exp: 0,
             inc: 0
-        }
+        },
+        budget: 0,  // Summary of Totals
+        percentage: -1 // Percentage value (-1 = means that it doesn't exist at the moment)
     };
 
     // Public Object and Method | - Allows other modules to add a new item into our data structure
@@ -54,6 +66,34 @@ var budgetController = (function() {
             // Returns newItem with specified type
             return newItem;
         },
+
+        // Function | Calculates sum of all of the incomes and expenses
+        calculateBudget: function() {
+
+            // Calculate total income and expenses
+            calculateTotal('exp');
+            calculateTotal('inc');
+
+            // Calculate the budget | (Income - Expenses)
+            data.budget = data.totals.inc - data.totals.exp;
+
+            // Calculate the percentage of income that was spent | Conditional statement checks if data total income is above 0, if its not (if we only have exp), percentage will be -1
+            if (data.totals.inc > 0) {
+                data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+            } else {
+                data.percentage = -1;
+            }
+        },
+
+        // Function Method | Returns budget (Total income and expense and percentage) so it can be stored and used later
+        getBudget: function() {
+            return {
+                budget: data.budget,
+                totalInc: data.totals.inc,
+                totalExp: data.totals.exp,
+                percentage: data.percentage
+            };
+        },  
 
         testing: function() {
             console.log(data);
@@ -83,7 +123,7 @@ var UIController = (function() {
             return {
                 type: document.querySelector(DOMStrings.inputType).value,  // Either inc or exp (income or expenses)
                 description: document.querySelector(DOMStrings.inputDescription).value,
-                value: document.querySelector(DOMStrings.inputValue).value
+                value: parseFloat(document.querySelector(DOMStrings.inputValue).value)  // Parse float converts strings to numbers
             };
         },
 
@@ -108,7 +148,7 @@ var UIController = (function() {
             document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
         },
 
-        // Clearing the input fields
+        // Clearing the input fields - Using array trick
         clearFields: function() {
             var fields, fieldsArr;
 
@@ -155,6 +195,17 @@ var controller = (function(budgetCtrl, UICtrl) {
         });
     };
 
+    var updateBudget = function() {
+        // Calculate the budget
+        budgetCtrl.calculateBudget();
+
+        // Return the Budget
+        var budget = budgetCtrl.getBudget();
+
+        // Display the Budget on the UI
+        console.log(budget);
+    };
+
     // FUNCTION | - Adding Item Function - When hitting input button
     var ctrlAddItem = function() {
 
@@ -164,26 +215,26 @@ var controller = (function(budgetCtrl, UICtrl) {
         // Get input data
         input = UICtrl.getInput();
 
-        // Add item to the budget controller
-        newItem = budgetCtrl.addItem(input.type, input.description, input.value);
+        // Tests if description is not empty, if value is not NaN and value is not 0. Then executes following code.
+        if (input.description !== "" && !isNaN(input.value) && input.value > 0) {
+            // Add item to the budget controller
+            newItem = budgetCtrl.addItem(input.type, input.description, input.value);
 
-        // Add item to the UI
-        UICtrl.addListItem(newItem, input.type);
+            // Add item to the UI
+            UICtrl.addListItem(newItem, input.type);
 
-        // Clear the fields
-        UICtrl.clearFields();
+            // Clear the fields
+            UICtrl.clearFields();
 
-        // Calculate the budget
-
-
-        // Display the Budget on the UI
-
+            // Calculate and update budget (call Function)
+            updateBudget();
+        }
     };
 
     // INITIALIZATION FUNCTION | - Public Function
     return {
         init: function() {
-            console.log('Testing');
+            console.log('Application has started . . ');
             setupEventListeners();
         }
     }
