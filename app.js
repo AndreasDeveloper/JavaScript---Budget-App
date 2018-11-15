@@ -67,6 +67,22 @@ var budgetController = (function() {
             return newItem;
         },
 
+        // Public Object and Method | - Allows other modules to delete new item from UI and data structure
+        deleteItem: function(type, id) {
+            var ids, index;
+
+            ids = data.allItems[type].map(function(current) {
+                return current.id;
+            });
+
+            index = ids.indexOf(id);
+
+            // If index is different to -1, delete item
+            if (index !== -1) {
+                data.allItems[type].splice(index, 1);
+            }
+        },
+
         // Function | Calculates sum of all of the incomes and expenses
         calculateBudget: function() {
 
@@ -118,7 +134,8 @@ var UIController = (function() {
         budgetLabel: '.budget__value',
         incomeLabel: '.budget__income--value',
         expensesLabel: '.budget__expenses--value',
-        percentageLabel: '.budget__expenses--percentage'
+        percentageLabel: '.budget__expenses--percentage',
+        container: '.container'
     };
 
     // Stores Item Structure (Type, Description and Value)
@@ -139,10 +156,10 @@ var UIController = (function() {
             // Creates HTML string with placeholder text
             if (type === 'inc') {
                 element = DOMStrings.incomeContainer;
-                html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
             } else if (type === 'exp') {
                 element = DOMStrings.expensesContainer;
-                html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
             }
             // Replace the placeholder text with actual data
             newHtml = html.replace('%id%', obj.id);
@@ -209,6 +226,8 @@ var controller = (function(budgetCtrl, UICtrl) {
                 ctrlAddItem();
             } 
         });
+
+        document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem);
     };
 
     var updateBudget = function() {
@@ -244,6 +263,26 @@ var controller = (function(budgetCtrl, UICtrl) {
 
             // Calculate and update budget (call Function)
             updateBudget();
+        }
+    };
+
+    // FUNCTION | - Delete Item Function | - Deletes items on click of a delete button
+    var ctrlDeleteItem = function(event) {  // We need event argument to know what the target element is
+        var itemID, splitID, type, ID;
+
+        itemID = event.target.parentNode.parentNode.parentNode.parentNode.id;  // parentNode bubbles up parent element by one | DOM Manipulation
+
+        if (itemID) {
+            splitID = itemID.split('-'); // Split ID method for the strings. Splits the strings from '-'
+            type = splitID[0];
+            ID = parseInt(splitID[1]);
+
+            // Delete the item from the data structure
+            budgetCtrl.deleteItem(type, ID);
+
+            // Delete the item from the UI
+
+            // Update and show new totals/budget
         }
     };
 
