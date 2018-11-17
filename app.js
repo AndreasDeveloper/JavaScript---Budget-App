@@ -167,7 +167,8 @@ var UIController = (function() {
         expensesLabel: '.budget__expenses--value',
         percentageLabel: '.budget__expenses--percentage',
         container: '.container',
-        expensesPercLabel: '.item__percentage'
+        expensesPercLabel: '.item__percentage',
+        dateLabel: '.budget__title--month'
     };
 
     // Private Function | - Converting numbers to rounded integers with decimals 
@@ -187,6 +188,13 @@ var UIController = (function() {
 
         // Return all of the strings together
         return (type === 'exp' ? '-' : '+') + ' ' + int + '.' + dec;
+    };
+
+    // Private Function | 
+    var nodeListForEach = function(list, callback) {
+        for (var i = 0; i < list.length; i++) {
+            callback(list[i], i);   // Callback function
+        }
     };
 
     // Stores Item Structure (Type, Description and Value)
@@ -265,12 +273,7 @@ var UIController = (function() {
         displayPercentages: function(percentages) {
             var fields = document.querySelectorAll(DOMStrings.expensesPercLabel);   // Selects percentage label | This returns node list
 
-            var nodeListForEach = function(list, callback) {
-                for (var i = 0; i < list.length; i++) {
-                    callback(list[i], i);   // Callback function
-                }
-            };
-
+            // Useful Function
             nodeListForEach(fields, function(current, index) {
                 if (percentages[index] > 0) {
                     current.textContent = percentages[index] + '%';
@@ -278,6 +281,34 @@ var UIController = (function() {
                     current.textContent = '---';
                 }
             });
+        },
+
+        // Displays current month/date
+        displayMonth: function() {
+            var now, year, month, months;
+
+            now = new Date();
+            
+            months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            month = now.getMonth();
+
+            year = now.getFullYear();
+            document.querySelector(DOMStrings.dateLabel).textContent = months[month] + ' ' + year;
+        },
+
+        // Change outline color. If its either income or expense (blue and red) 
+        changedType: function() {
+
+            var fields = document.querySelectorAll(
+                DOMStrings.inputType + ',' +
+                DOMStrings.inputDescription + ',' +
+                DOMStrings.inputValue);
+
+            nodeListForEach(fields, function(cur) {
+                cur.classList.toggle('red-focus');
+            });
+
+            document.querySelector(DOMStrings.inputBtn).classList.toggle('red');
         },
 
         getDOMStrings: function() {
@@ -311,6 +342,9 @@ var controller = (function(budgetCtrl, UICtrl) {
 
         // Event Listener 3 | When delete button is clicked, delete the item
         document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem);
+
+        // Event Listener 4 | Changing Blue outline on inc and red outline on exp
+        document.querySelector(DOM.inputType).addEventListener('change', UICtrl.changedType);
     };
 
     // FUNCTION | - Updates the budget after each change
@@ -394,6 +428,7 @@ var controller = (function(budgetCtrl, UICtrl) {
     return {
         init: function() {
             console.log('Application has started . . ');
+            UICtrl.displayMonth();
             UICtrl.displayBudget({
                 budget: 0,
                 totalInc: 0,
