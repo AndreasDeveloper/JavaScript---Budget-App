@@ -1,5 +1,5 @@
 /// DATA FILLED MODULE | DATA CONTROLLER
-var budgetController = (function() {
+var budgetController = (() => {
 
     // Function Constructor | Expenses
     var Expense = function(id, description, value) {
@@ -11,7 +11,6 @@ var budgetController = (function() {
 
     // Function Constructor Method built with prototye | Calculates Percentages
     Expense.prototype.calcPercentage = function(totalIncome) {
-
         if (totalIncome > 0) {
             this.percentage = Math.round((this.value / totalIncome) * 100);
         } else {
@@ -83,7 +82,7 @@ var budgetController = (function() {
             return newItem;
         },
 
-        // Function Method | - Allows other modules to delete new item from UI and data structure
+        // Method | - Allows other modules to delete new item from UI and data structure
         deleteItem: function(type, id) {
             var ids, index;
 
@@ -99,7 +98,7 @@ var budgetController = (function() {
             }
         },
 
-        // Function Method | Calculates sum of all of the incomes and expenses
+        // Method | Calculates sum of all of the incomes and expenses
         calculateBudget: function() {
 
             // Calculate total income and expenses
@@ -117,14 +116,14 @@ var budgetController = (function() {
             }
         },
 
-        // Function Method | Calculates Percentages
+        // Method | Calculates Percentages
         calculatePercentages: function() {
             data.allItems.exp.forEach(function(cur) {
                 cur.calcPercentage(data.totals.inc);
             });
         },  
 
-        //
+        // Method | Gets percentage
         getPercentages: function() {
             var allPerc = data.allItems.exp.map(function(cur) {
                 return cur.getPercentage();
@@ -132,7 +131,7 @@ var budgetController = (function() {
             return allPerc;
         },
 
-        // Function Method | Returns budget (Total income and expense and percentage) so it can be stored and used later
+        // Method | Returns budget (Total income and expense and percentage) so it can be stored and used later
         getBudget: function() {
             return {
                 budget: data.budget,
@@ -154,7 +153,7 @@ var budgetController = (function() {
 /// UI FILLED MODULE | UI CONTROLLER
 var UIController = (function() {
 
-    // Private Variables | DOM Manipulation
+    // Private Variables | DOM Elements
     var DOMStrings = {
         inputType: '.add__type',
         inputDescription: '.add__description',
@@ -310,7 +309,7 @@ var UIController = (function() {
 
             document.querySelector(DOMStrings.inputBtn).classList.toggle('red');
         },
-
+        // Returning DOM Strings
         getDOMStrings: function() {
             return DOMStrings;
         }
